@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SUBSENTINEL AI — Mine Intelligence Center</title>
+<style>
+:root{
+  --bg:#05080b;--bg2:#080d11;--panel:#0b1217;--panel2:#0e171d;
+  --line:#1a2931;--line2:#22353e;--text:#e7eef1;--muted:#70818b;
+  --cyan:#20d7e8;--cyan2:#0ea5b7;--green:#2bd576;--amber:#f5b942;
+  --orange:#fb7b2c;--red:#ef4b55;--coal:#151b1e;--sidebar:248px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+body{
+ background:
+ radial-gradient(circle at 78% 0%,rgba(32,215,232,.07),transparent 25%),
+ radial-gradient(circle at 30% 100%,rgba(245,185,66,.035),transparent 28%),
+ repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 5px),
+ var(--bg);
+}
+button{font:inherit}.app{display:flex;min-height:100vh}
+.sidebar{
+ position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:rgba(5,10,14,.97);
+ border-right:1px solid var(--line);padding:20px 15px;z-index:50
+}
+.brand{display:flex;gap:12px;align-items:center;padding:4px 8px 25px}
+.brand-icon{
+ width:42px;height:42px;border:1px solid #20d7e855;color:var(--cyan);display:grid;place-items:center;
+ background:linear-gradient(145deg,#10222a,#091116);font-size:21px;box-shadow:0 0 25px #20d7e812
+}
+.brand h1{font-size:15px;letter-spacing:2.3px}.brand span{display:block;color:#52646e;font-size:8px;letter-spacing:1.7px;margin-top:4px}
+.nav-title{margin:18px 9px 8px;color:#40515a;font-size:8px;font-weight:700;letter-spacing:2px}
+.nav-item{
+ display:flex;align-items:center;gap:11px;padding:11px 12px;margin:3px 0;border:1px solid transparent;
+ color:#71838c;font-size:10px;cursor:pointer;transition:.18s
+}
+.nav-item:hover{background:#0b171d;color:#b8c9cf}.nav-item.active{background:#0b1b22;color:var(--cyan);border-color:#20d7e82b}
+.nav-icon{width:18px;text-align:center;color:inherit}.system-box{position:absolute;left:15px;right:15px;bottom:18px;padding:12px;border:1px solid var(--line);background:#081015}
+.system-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;color:#52646d;font-size:8px}.system-row:last-child{margin:0}.online{color:var(--green)}.dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:currentColor;box-shadow:0 0 9px currentColor;margin-right:5px}
+.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));padding:22px 28px 45px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.title h2{font-size:22px;font-weight:600;letter-spacing:.2px}.title p{margin-top:5px;color:var(--muted);font-size:9px;letter-spacing:.2px}
+.livebar{display:flex;align-items:center;gap:12px}.live{padding:8px 11px;border:1px solid #2bd57638;background:#2bd5760a;color:#57df8c;font-size:8px;letter-spacing:1.4px}.clock{font-size:10px;color:#71838c;font-variant-numeric:tabular-nums}
+.page{display:none}.page.active{display:block}
+.node-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:13px}.node-btn{min-width:108px;padding:9px 12px;background:#0a1217;border:1px solid var(--line);color:#6d8089;text-align:left;cursor:pointer}.node-btn:hover{border-color:#2b424d}.node-btn.selected{border-color:#20d7e866;background:#0c1b21;color:var(--cyan)}.node-btn strong{display:block;font-size:9px;letter-spacing:1px}.node-btn small{display:block;margin-top:5px;font-size:7px;color:#50636c}
+.command-strip{display:grid;grid-template-columns:1.4fr repeat(6,1fr);gap:7px;margin-bottom:13px}
+.telemetry{padding:10px 12px;border:1px solid var(--line);background:#091116;min-width:0}.telemetry span{display:block;color:#50616a;font-size:7px;letter-spacing:1.3px}.telemetry strong{display:block;margin-top:5px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.telemetry.live-node strong{color:var(--cyan)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.card{background:linear-gradient(145deg,#0c151a,#091015);border:1px solid var(--line);padding:16px;min-width:0;position:relative;overflow:hidden}.card::after{content:"";position:absolute;right:-35px;top:-35px;width:100px;height:100px;border:1px solid #ffffff06;transform:rotate(45deg)}
+.card-label{color:#62757f;font-size:7px;letter-spacing:1.5px;text-transform:uppercase}.big-value{font-size:24px;font-weight:600;margin-top:10px}.sub{color:#52646e;font-size:8px;margin-top:6px}
+.risk-card{grid-column:span 2}.risk-layout{display:flex;align-items:center;gap:24px;margin-top:8px}.risk-ring{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;border:7px solid #24343c;position:relative;flex:none}.risk-ring::before{content:"";position:absolute;inset:7px;border:1px solid #ffffff10;border-radius:50%}.risk-center{text-align:center;z-index:2}.risk-center strong{display:block;font-size:16px}.risk-center span{font-size:7px;color:#62747d;letter-spacing:1px}.risk-low{border-color:#2bd576a8}.risk-warning{border-color:#f5b942c2}.risk-high{border-color:#fb7b2ccc}.risk-critical{border-color:#ef4b55d0;box-shadow:0 0 25px #ef4b5520}
+.score{font-size:34px;font-weight:650}.risk-message{max-width:330px;color:#71818a;font-size:9px;line-height:1.6;margin-top:6px}
+.sensor-card .big-value{font-size:28px}.state{margin-top:8px;font-size:8px}.state.normal{color:var(--green)}.state.alert{color:var(--amber)}
+.section{margin-top:13px}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.section-head h3{font-size:11px;font-weight:550;letter-spacing:.8px}.section-head span{font-size:7px;color:#4e6069;letter-spacing:1.3px}
+.table{width:100%;border-collapse:collapse;background:#091116;border:1px solid var(--line)}.table th{padding:10px;color:#50626b;text-align:left;font-size:7px;letter-spacing:1.1px;border-bottom:1px solid var(--line)}.table td{padding:10px;color:#a5b4ba;font-size:8px;border-bottom:1px solid #132027}.table tr:last-child td{border-bottom:0}.pill{display:inline-block;padding:4px 7px;border:1px solid;font-size:7px;letter-spacing:.5px}.low{color:var(--green);border-color:#2bd57640;background:#2bd57608}.warning{color:var(--amber);border-color:#f5b94245;background:#f5b94208}.high{color:var(--orange);border-color:#fb7b2c45;background:#fb7b2c08}.critical{color:var(--red);border-color:#ef4b5545;background:#ef4b5508}.resolved{color:#63d79a;border-color:#2bd57640}
+.network-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.node-panel{min-height:180px}.node-panel.offline{opacity:.55}.node-panel h4{font-size:12px;letter-spacing:1px}.node-live{margin-top:6px;font-size:7px;color:var(--green)}.node-off{margin-top:6px;font-size:7px;color:#52636b}.node-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.node-metrics span{display:block;color:#4f626b;font-size:7px}.node-metrics b{display:block;margin-top:3px;font-size:12px}
+.ai-top{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.ai-factor{display:flex;justify-content:space-between;gap:10px;margin-top:11px}.factor-bar{height:5px;background:#142129;margin-top:5px}.factor-bar i{display:block;height:100%;background:var(--cyan)}
+.timeline{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:13px;height:90px;align-items:end}.timebar{background:#12313a;border-top:2px solid var(--cyan);min-height:8px;position:relative}.timebar span{position:absolute;bottom:-17px;left:0;color:#455962;font-size:6px;white-space:nowrap}
+.mine-layout{display:grid;grid-template-columns:1.7fr .8fr;gap:11px}.mine-map{height:430px;position:relative;overflow:hidden;background:#070d11;border:1px solid var(--line);background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);background-size:32px 32px}
+.mine-title{position:absolute;left:15px;top:13px;color:#50636c;font-size:7px;letter-spacing:2px}.seam{position:absolute;height:20px;border:2px solid #a66a2450;background:#6b431c18;transform:skewX(-10deg)}.seam.a{left:6%;right:7%;top:22%}.seam.b{left:15%;right:15%;top:66%}
+.tunnel{position:absolute;border:2px solid #20d7e840;background:#20d7e806;box-shadow:0 0 20px #20d7e808}.t1{left:9%;right:10%;top:45%;height:55px;border-radius:28px}.t2{left:48%;top:18%;width:58px;height:260px;border-radius:28px}.t3{left:25%;top:31%;width:48%;height:45px;border-radius:25px}.shaft{position:absolute;left:48%;top:8%;height:80px;border-left:3px solid #f5b94277}.node-dot{position:absolute;width:43px;height:43px;border-radius:50%;display:grid;place-items:center;font-size:7px;font-weight:700;background:#0b1b20;border:2px solid var(--green);color:#9af0bd;box-shadow:0 0 22px #2bd57625;cursor:pointer}.node-dot.warn{border-color:var(--amber);color:#ffd783;box-shadow:0 0 22px #f5b94222}.node-dot.crit{border-color:var(--red);color:#ff9aa0}.nd1{left:13%;top:46%}.nd2{left:46%;top:25%}.nd3{right:13%;top:46%}.nd4{left:46%;bottom:8%}.mine-legend{position:absolute;right:12px;top:12px;background:#081116dd;border:1px solid var(--line);padding:10px}.mine-legend div{font-size:7px;color:#637680;margin:6px}.mine-legend i{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}.map-side .card{height:100%}.map-info{margin-top:16px}.map-info h4{font-size:14px}.map-info p{margin-top:7px;color:#61737c;font-size:8px;line-height:1.6}.map-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.map-stat{border:1px solid var(--line);padding:10px}.map-stat span{display:block;color:#50626c;font-size:7px}.map-stat b{display:block;margin-top:4px;font-size:12px}
+.alert-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:10px}.alert-count{padding:13px;border:1px solid var(--line);background:#091116}.alert-count strong{display:block;font-size:22px}.alert-count span{display:block;color:#52646e;font-size:7px;margin-top:4px;letter-spacing:1px}.filters{display:flex;gap:5px}.filter{padding:7px 10px;border:1px solid var(--line);background:#091116;color:#647680;font-size:7px;cursor:pointer}.filter.active{color:var(--cyan);border-color:#20d7e855}
+.resolve{padding:5px 7px;border:1px solid #2bd57645;background:#2bd57608;color:#4fe08b;font-size:7px;cursor:pointer}
+.chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.chart-card{min-height:235px}.chart{height:165px;margin-top:12px;position:relative;border-left:1px solid #1a2931;border-bottom:1px solid #1a2931;background:linear-gradient(#ffffff04 1px,transparent 1px);background-size:100% 33px}.chart svg{width:100%;height:100%}.chart-labels{display:flex;justify-content:space-between;color:#44565f;font-size:6px;margin-top:6px}.range-buttons{display:flex;gap:4px}.range{padding:6px 9px;border:1px solid var(--line);background:#091116;color:#60727b;font-size:7px;cursor:pointer}.range.active{color:var(--cyan);border-color:#20d7e855}
+.footer{display:flex;justify-content:space-between;margin-top:20px;color:#3f5058;font-size:7px}
+@media(max-width:1200px){.command-strip{grid-template-columns:repeat(4,1fr)}.network-grid{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:repeat(2,1fr)}.risk-card{grid-column:span 2}.mine-layout{grid-template-columns:1fr}.chart-grid{grid-template-columns:1fr}}
+@media(max-width:780px){:root{--sidebar:64px}.sidebar{padding:14px 7px}.brand{justify-content:center}.brand>div:last-child,.nav-title,.nav-item span,.system-box{display:none}.nav-item{justify-content:center}.main{padding:16px}.grid,.ai-top,.network-grid,.alert-summary{grid-template-columns:1fr}.risk-card{grid-column:span 1}.command-strip{grid-template-columns:repeat(2,1fr)}.topbar{align-items:flex-start}.title p{display:none}.mine-map{height:350px}}
+
+/* ---------- ADVANCED TOP-VIEW / EXTRA OPTIONS ---------- */
+.option-row{display:flex;gap:6px;flex-wrap:wrap}
+.option-btn{padding:7px 10px;border:1px solid var(--line);background:#091116;color:#647680;font-size:7px;letter-spacing:.7px;cursor:pointer}
+.option-btn:hover,.option-btn.active{color:var(--cyan);border-color:#20d7e855;background:#0b1b22}
+.map-toolbar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:5px;flex-wrap:wrap;z-index:8}
+.map-control{padding:7px 9px;border:1px solid #24353d;background:#071015dd;color:#78909a;font-size:7px;cursor:pointer}
+.map-control:hover{color:var(--cyan);border-color:#20d7e866}
+.map-scale{position:absolute;left:15px;bottom:53px;color:#52656e;font-size:7px;letter-spacing:1px;z-index:5}
+.topview-map{height:510px;position:relative;overflow:hidden;background:
+ radial-gradient(circle at 50% 50%,rgba(32,215,232,.035),transparent 45%),
+ #060b0e;
+ border:1px solid var(--line);
+}
+.topview-map .gridline{position:absolute;inset:0;background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px);background-size:28px 28px}
+.mine-boundary{position:absolute;left:5%;right:5%;top:8%;bottom:10%;border:1px dashed #52656e55;pointer-events:none}
+.map-label{position:absolute;color:#53666f;font-size:7px;letter-spacing:1.3px;z-index:4;pointer-events:none}
+.surface-shaft{position:absolute;width:70px;height:70px;left:47%;top:5%;border:2px solid #f5b94288;background:#f5b94209;display:grid;place-items:center;color:#d8b45c;font-size:7px;letter-spacing:1px;z-index:4}
+.haulage{position:absolute;height:34px;border:2px solid #20d7e855;background:#20d7e808;border-radius:18px;z-index:2}
+.crosscut{position:absolute;width:30px;border-left:2px solid #20d7e855;z-index:2}
+.seam-fill{position:absolute;border:1px solid #9a6a2f55;background:#7b4d1d12;transform:rotate(-7deg);z-index:1}
+.zone{position:absolute;border:1px dashed #ef4b5540;background:#ef4b5507;border-radius:50%;z-index:1;pointer-events:none}
+.top-node{position:absolute;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;z-index:9;cursor:pointer;background:#071115;border:2px solid var(--green);color:#a5f3c2;box-shadow:0 0 0 5px #2bd57609,0 0 25px #2bd57620;transition:.18s}
+.top-node:hover{transform:scale(1.08);box-shadow:0 0 0 7px #20d7e812,0 0 30px #20d7e530}
+.top-node.selected{border-color:var(--cyan);color:#b7f8ff;box-shadow:0 0 0 6px #20d7e815,0 0 32px #20d7e535}
+.top-node.warn{border-color:var(--amber);color:#ffe09a;box-shadow:0 0 0 5px #f5b94210,0 0 28px #f5b94225}
+.top-node.crit{border-color:var(--red);color:#ffb0b5;box-shadow:0 0 0 5px #ef4b5510,0 0 28px #ef4b5528}
+.top-node.offline{opacity:.28;filter:grayscale(1)}
+.node-tag{position:absolute;top:57px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#71848d;font-size:7px;letter-spacing:1px}
+.coord-tag{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:6px;color:#43555d;white-space:nowrap}
+.map-status-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}
+.map-status-item{border:1px solid var(--line);background:#091116;padding:9px}
+.map-status-item span{display:block;color:#50626b;font-size:6px;letter-spacing:1px}
+.map-status-item b{display:block;margin-top:4px;font-size:11px}
+.layer-list{display:grid;gap:7px;margin-top:14px}
+.layer-item{display:flex;align-items:center;justify-content:space-between;padding:9px;border:1px solid var(--line);background:#091116;color:#61737c;font-size:7px}
+.layer-item input{accent-color:var(--cyan)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.kv .map-stat{min-height:55px}
+.export-box,.gateway-box,.settings-box{margin-top:10px}
+.status-led{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);margin-right:5px}
+@media(max-width:900px){.map-status-strip{grid-template-columns:repeat(2,1fr)}.topview-map{height:430px}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">◈</div><div><h1>SUBSENTINEL</h1><span>AI MINE INTELLIGENCE</span></div></div>
+  <div class="nav-title">MONITORING</div>
+  <div class="nav-item active" onclick="showPage('command',this)"><span class="nav-icon">◉</span><span>Command Center</span></div>
+  <div class="nav-item" onclick="showPage('network',this)"><span class="nav-icon">◇</span><span>Sensor Network</span></div>
+  <div class="nav-item" onclick="showPage('ai',this)"><span class="nav-icon">◌</span><span>AI Intelligence</span></div>
+  <div class="nav-item" onclick="showPage('map',this)"><span class="nav-icon">⬡</span><span>Mine Map</span></div>
+  <div class="nav-item" onclick="showPage('alerts',this)"><span class="nav-icon">▣</span><span>Alert Center</span></div>
+  <div class="nav-item" onclick="showPage('history',this)"><span class="nav-icon">▤</span><span>Historical Data</span></div>
+  <div class="nav-title">OPERATIONS</div>
+  <div class="nav-item" onclick="showPage('gateway',this)"><span class="nav-icon">◈</span><span>Gateway Monitor</span></div>
+  <div class="nav-item" onclick="showPage('export',this)"><span class="nav-icon">⇩</span><span>Data Export</span></div>
+  <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙</span><span>Prototype Settings</span></div>
+  <div class="nav-title">SYSTEM</div>
+  <div class="system-box">
+    <div class="system-row"><span>API SERVER</span><b class="online" id="apiState"><span class="dot"></span>ONLINE</b></div>
+    <div class="system-row"><span>DATABASE</span><b class="online">CONNECTED</b></div>
+    <div class="system-row"><span>AI ENGINE</span><b class="online">ACTIVE</b></div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="title"><h2>Mine Intelligence Center</h2><p>SUBSENTINEL AI · REAL-TIME SUBSIDENCE TELEMETRY · AI-ASSISTED RISK ANALYSIS</p></div>
+  <div class="livebar"><div class="clock" id="clock">--:--:--</div><div class="live"><span class="dot"></span>LIVE MONITORING</div></div>
+</header>
+
+<div class="node-strip" id="nodeStrip"></div>
+
+<section id="command" class="page active">
+  <div class="command-strip">
+    <div class="telemetry live-node"><span>SELECTED NODE</span><strong id="tNode">NODE_01</strong></div>
+    <div class="telemetry"><span>TILT</span><strong id="tTilt">—</strong></div>
+    <div class="telemetry"><span>VIBRATION</span><strong id="tVib">—</strong></div>
+    <div class="telemetry"><span>TEMPERATURE</span><strong id="tTemp">—</strong></div>
+    <div class="telemetry"><span>HUMIDITY</span><strong id="tHum">—</strong></div>
+    <div class="telemetry"><span>RISK</span><strong id="tRisk">—</strong></div>
+    <div class="telemetry"><span>DATA AGE</span><strong id="tAge">—</strong></div>
+  </div>
+
+  <div class="grid">
+    <div class="card risk-card">
+      <div class="card-label">AI Situation Brief · Prototype Risk Engine</div>
+      <div class="risk-layout">
+        <div id="riskRing" class="risk-ring risk-low"><div class="risk-center"><strong id="riskLevel">LOW</strong><span>CURRENT RISK</span></div></div>
+        <div>
+          <div class="card-label">RISK SCORE</div><div class="score" id="riskScore">0</div>
+          <div class="risk-message" id="riskMessage">Waiting for current sensor telemetry.</div>
+          <div class="sub" id="anomalyText">ANOMALY: —</div>
+        </div>
+      </div>
+    </div>
+    <div class="card sensor-card"><div class="card-label">Tilt Sensor</div><div class="big-value" id="tilt">—</div><div class="state normal" id="tiltState">● NORMAL</div><div class="sub">SW-520D · DIGITAL STATE</div></div>
+    <div class="card sensor-card"><div class="card-label">Vibration</div><div class="big-value" id="vibration">—</div><div class="state normal" id="vibState">● NORMAL</div><div class="sub">SW-420 · EVENT DETECTOR</div></div>
+  </div>
+
+  <div class="section">
+    <div class="grid">
+      <div class="card"><div class="card-label">Temperature</div><div class="big-value" id="temperature">— °C</div><div class="sub">DHT11 · LIVE</div></div>
+      <div class="card"><div class="card-label">Humidity</div><div class="big-value" id="humidity">— %</div><div class="sub">DHT11 · LIVE</div></div>
+      <div class="card"><div class="card-label">Activity / 5 Samples</div><div class="big-value" id="activity5">—</div><div class="sub">ROLLING SENSOR ACTIVITY</div></div>
+      <div class="card"><div class="card-label">AI Anomaly</div><div class="big-value" id="anomaly">—</div><div class="sub">ISOLATION FOREST</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h3>AI Situation Brief</h3><span>LIVE NODE ASSESSMENT</span></div>
+    <div class="card"><div id="brief" style="font-size:9px;color:#74868f;line-height:1.8">Waiting for sensor data.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h3>Recent Sensor Events</h3><span id="eventMeta">SELECTED NODE</span></div>
+    <table class="table"><thead><tr><th>TIME</th><th>NODE</th><th>EVENT</th><th>TILT</th><th>VIBRATION</th><th>RISK</th></tr></thead><tbody id="recentEvents"></tbody></table>
+  </div>
+</section>
+
+<section id="network" class="page">
+  <div class="section-head"><h3>Sensor Network</h3><span>ESP32 → WI-FI → PICO W GATEWAY</span></div>
+  <div class="network-grid" id="networkGrid"></div>
+  <div class="section"><div class="card">
+    <div class="card-label">NETWORK TOPOLOGY</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:15px;flex-wrap:wrap;padding:35px 10px">
+      <div class="telemetry" style="text-align:center"><strong style="color:var(--cyan)">NODE 01</strong><span>ESP32 + SENSORS</span></div>
+      <div style="color:var(--cyan)">→ Wi-Fi →</div>
+      <div class="telemetry" style="text-align:center"><strong style="color:var(--amber)">PICO W</strong><span>GATEWAY / MineSentinal</span></div>
+      <div style="color:var(--cyan)">→ API →</div>
+      <div class="telemetry" style="text-align:center"><strong style="color:var(--green)">AI CORE</strong><span>FASTAPI + SQLITE</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section id="ai" class="page">
+  <div class="section-head"><h3>AI Intelligence</h3><span id="aiNode">NODE_01</span></div>
+  <div class="ai-top">
+    <div class="card"><div class="card-label">Risk Level</div><div class="big-value" id="aiRisk">—</div></div>
+    <div class="card"><div class="card-label">Risk Score</div><div class="big-value" id="aiScore">—</div></div>
+    <div class="card"><div class="card-label">Anomaly</div><div class="big-value" id="aiAnomaly">—</div></div>
+    <div class="card"><div class="card-label">Activity / 5</div><div class="big-value" id="aiActivity">—</div></div>
+  </div>
+  <div class="section">
+    <div class="card">
+      <div class="card-label">Contributing Factors</div>
+      <div class="ai-factor"><span>Tilt activity</span><b id="factorTilt">0</b></div><div class="factor-bar"><i id="barTilt" style="width:0%"></i></div>
+      <div class="ai-factor"><span>Vibration activity</span><b id="factorVib">0</b></div><div class="factor-bar"><i id="barVib" style="width:0%"></i></div>
+      <div class="ai-factor"><span>Combined activity</span><b id="factorActivity">0</b></div><div class="factor-bar"><i id="barActivity" style="width:0%"></i></div>
+      <div class="ai-factor"><span>Model anomaly</span><b id="factorAnomaly">NORMAL</b></div><div class="factor-bar"><i id="barAnomaly" style="width:0%"></i></div>
+    </div>
+  </div>
+  <div class="section"><div class="section-head"><h3>Behaviour Timeline</h3><span>RECENT EVENTS</span></div><div class="card"><div class="timeline" id="aiTimeline"></div></div></div>
+  <div class="section"><div class="card"><div class="card-label">AI Assessment</div><div id="aiAssessment" style="color:#71838c;font-size:9px;line-height:1.8;margin-top:9px">Waiting for sensor data.</div></div></div>
+</section>
+
+<section id="map" class="page">
+  <div class="section-head">
+    <h3>Mine Map · Top View Spatial Intelligence</h3>
+    <span>UNDERGROUND PLAN VIEW · PROTOTYPE COORDINATES</span>
+  </div>
+
+  <div class="mine-layout">
+    <div>
+      <div class="topview-map" id="topViewMap">
+        <div class="gridline" id="mapGrid"></div>
+        <div class="mine-boundary"></div>
+
+        <div class="map-label" style="left:7%;top:4%">PANEL A · EAST FIELD</div>
+        <div class="map-label" style="right:7%;top:4%">NORTH ↑</div>
+        <div class="map-label" style="left:8%;bottom:8%">PANEL B</div>
+        <div class="map-label" style="right:8%;bottom:8%">RETURN AIRWAY</div>
+
+        <div class="surface-shaft">SHAFT<br>A-01</div>
+
+        <!-- Coal seams / geological bands -->
+        <div class="seam-fill" style="left:8%;top:25%;width:84%;height:46px"></div>
+        <div class="seam-fill" style="left:14%;top:72%;width:70%;height:38px"></div>
+
+        <!-- Main haulage and cross-cuts: top-down mine plan -->
+        <div class="haulage" style="left:8%;right:8%;top:48%"></div>
+        <div class="haulage" style="left:20%;width:60%;top:29%"></div>
+        <div class="haulage" style="left:18%;width:64%;top:70%"></div>
+
+        <div class="crosscut" style="left:20%;top:29%;height:190px"></div>
+        <div class="crosscut" style="left:35%;top:29%;height:190px"></div>
+        <div class="crosscut" style="left:50%;top:29%;height:190px"></div>
+        <div class="crosscut" style="left:65%;top:29%;height:190px"></div>
+        <div class="crosscut" style="left:80%;top:29%;height:190px"></div>
+
+        <!-- Prototype hazard / observation zones -->
+        <div class="zone" style="left:6%;top:39%;width:180px;height:130px"></div>
+        <div class="zone" style="right:7%;top:54%;width:170px;height:125px"></div>
+
+        <!-- Five node positions in plan view -->
+        <div class="top-node" id="mapN1" style="left:11%;top:43%" onclick="selectNode('NODE_01')">
+          N01<span class="node-tag">ENTRY CROSSCUT</span><span class="coord-tag">X 110 · Y 430</span>
+        </div>
+        <div class="top-node" id="mapN2" style="left:43%;top:21%" onclick="selectNode('NODE_02')">
+          N02<span class="node-tag">SHAFT INTERFACE</span><span class="coord-tag">X 430 · Y 210</span>
+        </div>
+        <div class="top-node" id="mapN3" style="right:12%;top:43%" onclick="selectNode('NODE_03')">
+          N03<span class="node-tag">EAST PANEL</span><span class="coord-tag">X 820 · Y 430</span>
+        </div>
+        <div class="top-node" id="mapN4" style="left:43%;top:72%" onclick="selectNode('NODE_04')">
+          N04<span class="node-tag">RETURN AIRWAY</span><span class="coord-tag">X 430 · Y 720</span>
+        </div>
+        <div class="top-node" id="mapN5" style="left:70%;top:67%" onclick="selectNode('NODE_05')">
+          N05<span class="node-tag">PANEL B</span><span class="coord-tag">X 700 · Y 670</span>
+        </div>
+
+        <div class="mine-legend">
+          <div><i style="background:var(--green)"></i>LOW / NORMAL</div>
+          <div><i style="background:var(--amber)"></i>WARNING</div>
+          <div><i style="background:var(--orange)"></i>HIGH</div>
+          <div><i style="background:var(--red)"></i>CRITICAL</div>
+          <div><i style="background:var(--cyan)"></i>SELECTED</div>
+        </div>
+
+        <div class="map-scale">TOP VIEW · SCHEMATIC · NOT TO SCALE</div>
+
+        <div class="map-toolbar">
+          <button class="map-control" onclick="mapZoom(1.15)">＋ ZOOM</button>
+          <button class="map-control" onclick="mapZoom(.87)">－ ZOOM</button>
+          <button class="map-control" onclick="mapReset()">RESET VIEW</button>
+          <button class="map-control" onclick="toggleLayer('mapGrid',this)">GRID</button>
+          <button class="map-control" onclick="toggleLayerClass('seam-fill',this)">SEAMS</button>
+          <button class="map-control" onclick="toggleLayerClass('crosscut',this)">CROSSCUTS</button>
+          <button class="map-control" onclick="toggleLayerClass('zone',this)">RISK ZONES</button>
+        </div>
+      </div>
+
+      <div class="map-status-strip">
+        <div class="map-status-item"><span>ACTIVE NODES</span><b id="mapActiveNodes">—</b></div>
+        <div class="map-status-item"><span>SELECTED NODE</span><b id="mapSelected">NODE_01</b></div>
+        <div class="map-status-item"><span>MAP MODE</span><b>TOP VIEW</b></div>
+        <div class="map-status-item"><span>LAYERS</span><b id="mapLayerState">ALL ON</b></div>
+      </div>
+    </div>
+
+    <div class="map-side">
+      <div class="card">
+        <div class="card-label">Selected Spatial Node</div>
+        <div class="map-info">
+          <h4 id="mapNode">NODE_01</h4>
+          <p id="mapDescription">Select a node marker to inspect live telemetry and prototype position.</p>
+        </div>
+        <div class="map-stats">
+          <div class="map-stat"><span>TILT</span><b id="mapTilt">—</b></div>
+          <div class="map-stat"><span>VIBRATION</span><b id="mapVib">—</b></div>
+          <div class="map-stat"><span>RISK</span><b id="mapRisk">—</b></div>
+          <div class="map-stat"><span>SCORE</span><b id="mapScore">—</b></div>
+        </div>
+        <div class="kv">
+          <div class="map-stat"><span>LOCATION</span><b id="mapLocation">ENTRY CROSSCUT</b></div>
+          <div class="map-stat"><span>COORDINATES</span><b id="mapCoords">110, 430</b></div>
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="card-label">Map Layers</div>
+        <div class="layer-list">
+          <label class="layer-item">Grid <input type="checkbox" checked onchange="setLayer('mapGrid',this.checked)"></label>
+          <label class="layer-item">Coal seams <input type="checkbox" checked onchange="setLayerClass('seam-fill',this.checked)"></label>
+          <label class="layer-item">Crosscuts <input type="checkbox" checked onchange="setLayerClass('crosscut',this.checked)"></label>
+          <label class="layer-item">Observation zones <input type="checkbox" checked onchange="setLayerClass('zone',this.checked)"></label>
+          <label class="layer-item">Node labels <input type="checkbox" checked onchange="setNodeLabels(this.checked)"></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alerts" class="page">
+  <div class="section-head"><h3>Alert Center</h3><div class="filters"><button class="filter active" onclick="setAlertFilter('ACTIVE',this)">ACTIVE</button><button class="filter" onclick="setAlertFilter('CRITICAL',this)">CRITICAL</button><button class="filter" onclick="setAlertFilter('WARNING',this)">WARNING</button><button class="filter" onclick="setAlertFilter('RESOLVED',this)">RESOLVED</button></div></div>
+  <div class="alert-summary"><div class="alert-count"><strong id="activeCount">0</strong><span>Active</span></div><div class="alert-count"><strong id="criticalCount">0</strong><span>Critical</span></div><div class="alert-count"><strong id="warningCount">0</strong><span>Warning / High</span></div><div class="alert-count"><strong id="resolvedCount">0</strong><span>Resolved</span></div></div>
+  <table class="table"><thead><tr><th>TIME</th><th>NODE</th><th>EVENT</th><th>RISK</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="alertTable"></tbody></table>
+</section>
+
+<section id="history" class="page">
+  <div class="section-head"><h3>Historical Data & Sensor Analytics</h3><div class="range-buttons"><button class="range active" onclick="setRange(1,this)">1H</button><button class="range" onclick="setRange(6,this)">6H</button><button class="range" onclick="setRange(24,this)">24H</button><button class="range" onclick="setRange(168,this)">7D</button></div></div>
+  <div class="grid"><div class="card"><div class="card-label">Total Records</div><div class="big-value" id="histRecords">—</div></div><div class="card"><div class="card-label">Tilt Events</div><div class="big-value" id="histTilt">—</div></div><div class="card"><div class="card-label">Vibration Events</div><div class="big-value" id="histVib">—</div></div><div class="card"><div class="card-label">Connected Nodes</div><div class="big-value" id="histNodes">—</div></div></div>
+  <div class="section"><div class="chart-grid">
+    <div class="card chart-card"><div class="card-label">Tilt Activity</div><div class="chart" id="chartTilt"></div><div class="chart-labels"><span>EARLIER</span><span>NOW</span></div></div>
+    <div class="card chart-card"><div class="card-label">Vibration Activity</div><div class="chart" id="chartVib"></div><div class="chart-labels"><span>EARLIER</span><span>NOW</span></div></div>
+  </div></div>
+</section>
+
+
+<section id="gateway" class="page">
+  <div class="section-head"><h3>Gateway Monitor</h3><span>RASPBERRY PI PICO W · MINESENTINAL</span></div>
+  <div class="grid">
+    <div class="card"><div class="card-label">Gateway Status</div><div class="big-value"><span class="status-led"></span>ONLINE</div><div class="sub">192.168.4.1 · Wi-Fi AP</div></div>
+    <div class="card"><div class="card-label">Connected Nodes</div><div class="big-value" id="gwNodes">—</div><div class="sub">ESP32 sensor nodes</div></div>
+    <div class="card"><div class="card-label">API Target</div><div class="big-value" style="font-size:16px">127.0.0.1:8000</div><div class="sub">FastAPI backend</div></div>
+    <div class="card"><div class="card-label">Data Path</div><div class="big-value" style="font-size:15px">NODE → PICO → API</div><div class="sub">Current prototype architecture</div></div>
+  </div>
+  <div class="section"><div class="card gateway-box">
+    <div class="card-label">Gateway Diagnostics</div>
+    <table class="table" style="margin-top:10px">
+      <tbody>
+        <tr><td>Hotspot SSID</td><td>MineSentinal</td></tr>
+        <tr><td>Gateway IP</td><td>192.168.4.1</td></tr>
+        <tr><td>Gateway role</td><td>Wi-Fi aggregation / local portal</td></tr>
+        <tr><td>Backend</td><td>FastAPI + SQLite + AI</td></tr>
+        <tr><td>Prototype transport</td><td>Wi-Fi</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+</section>
+
+<section id="export" class="page">
+  <div class="section-head"><h3>Data Export</h3><span>LOCAL BROWSER EXPORT · CSV</span></div>
+  <div class="grid">
+    <div class="card"><div class="card-label">Available Events</div><div class="big-value" id="exportCount">—</div><div class="sub">Loaded from FastAPI</div></div>
+    <div class="card"><div class="card-label">Selected Node</div><div class="big-value" id="exportNode">NODE_01</div><div class="sub">Current dashboard selection</div></div>
+    <div class="card"><div class="card-label">Export Format</div><div class="big-value">CSV</div><div class="sub">Compatible with spreadsheet tools</div></div>
+    <div class="card"><div class="card-label">Data Scope</div><div class="big-value">LOCAL</div><div class="sub">No cloud upload from this page</div></div>
+  </div>
+  <div class="section"><div class="card export-box">
+    <div class="card-label">Export Options</div>
+    <div class="option-row" style="margin-top:14px">
+      <button class="option-btn" onclick="exportCSV('ALL')">EXPORT ALL EVENTS</button>
+      <button class="option-btn" onclick="exportCSV('SELECTED')">EXPORT SELECTED NODE</button>
+      <button class="option-btn" onclick="exportCSV('ACTIVE')">EXPORT ACTIVE ALERTS</button>
+    </div>
+  </div></div>
+</section>
+
+<section id="settings" class="page">
+  <div class="section-head"><h3>Prototype Settings</h3><span>DISPLAY / REFRESH / MAP</span></div>
+  <div class="grid">
+    <div class="card settings-box">
+      <div class="card-label">Dashboard Refresh</div>
+      <div class="option-row" style="margin-top:14px">
+        <button class="option-btn" onclick="setRefresh(350,this)">FAST · 350MS</button>
+        <button class="option-btn" onclick="setRefresh(700,this)">BALANCED · 700MS</button>
+        <button class="option-btn" onclick="setRefresh(1200,this)">LOW LOAD · 1.2S</button>
+      </div>
+      <div class="sub" id="refreshText">Current: 350 ms</div>
+    </div>
+    <div class="card settings-box">
+      <div class="card-label">Map Mode</div>
+      <div class="option-row" style="margin-top:14px">
+        <button class="option-btn active">TOP VIEW</button>
+        <button class="option-btn" onclick="selectNode(selectedNode);showPage('map',document.querySelector('.nav-item[onclick*=&quot;map&quot;]'))">OPEN MAP</button>
+      </div>
+      <div class="sub">Node positions are schematic prototype coordinates.</div>
+    </div>
+    <div class="card settings-box">
+      <div class="card-label">Stored Alert Resolutions</div>
+      <div class="big-value" id="settingsResolved">0</div>
+      <button class="option-btn" style="margin-top:12px" onclick="clearResolved()">CLEAR RESOLVED STATUS</button>
+    </div>
+    <div class="card settings-box">
+      <div class="card-label">Prototype Notice</div>
+      <div class="sub" style="font-size:9px;line-height:1.7;margin-top:10px">
+        This dashboard is a student prototype for telemetry visualization and AI-assisted risk analysis.
+        It is not a certified mine-safety system or a guaranteed collapse-prediction system.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer"><span>SUBSENTINEL AI · PROTOTYPE</span><span>AI-assisted risk assessment only · local telemetry</span></div>
+</main></div>
+
+<script>
+const API="http://127.0.0.1:8000";
+const NODE_IDS=["NODE_01","NODE_02","NODE_03","NODE_04","NODE_05"];
+let nodes={},events=[],selectedNode="NODE_01",alertFilter="ACTIVE",rangeHours=1;
+let resolved=[];
+try{const x=JSON.parse(localStorage.getItem("subsentinel_resolved_v2")||"[]");resolved=Array.isArray(x)?x:[]}catch(e){resolved=[]}
+let busyFast=false,busySlow=false,busyAnalytics=false;
+let fastRefreshMs=350; let mapScale=1;
+
+function apiUrl(path){return API+path+(path.includes("?")?"&":"?")+"_t="+Date.now()}
+async function getJSON(path){
+ const r=await fetch(apiUrl(path),{cache:"no-store",headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}});
+ if(!r.ok)throw new Error("HTTP "+r.status);return await r.json();
+}
+function canonical(v){return String(v||"").trim().toUpperCase().replace(/-/g,"_")}
+function txt(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+function number(v,d=1){if(v===null||v===undefined||v==="")return"—";const n=Number(v);return Number.isFinite(n)?n.toFixed(d):"—"}
+function time(v){if(!v)return"—";let s=String(v).replace(" ","T");let d=new Date(s);return isNaN(d)?String(v):d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function riskClass(r){return String(r||"LOW").toLowerCase()}
+function riskDescription(r){
+ r=String(r||"LOW").toUpperCase();
+ if(r==="CRITICAL")return"Multiple abnormal indicators are present in the current prototype risk analysis.";
+ if(r==="HIGH")return"Elevated vibration/activity is present in the current prototype risk analysis.";
+ if(r==="WARNING")return"Abnormal sensor activity is present. Continue monitoring the selected node.";
+ return"Current prototype analysis shows no significant abnormal sensor activity.";
+}
+function normalize(raw,id){
+ if(!raw)return{node_id:id,online:false};
+ let online=raw.online!==undefined?!!raw.online:raw.connected!==undefined?!!raw.connected:raw.status!==undefined?["ONLINE","CONNECTED","ACTIVE"].includes(String(raw.status).toUpperCase()):!!raw.timestamp;
+ return {node_id:canonical(raw.node_id||raw.nodeID||raw.id||id),online,
+ temperature:raw.temperature??raw.temp??null,humidity:raw.humidity??null,tilt:raw.tilt??null,vibration:raw.vibration??null,
+ risk_level:String(raw.risk_level??raw.risk??"LOW").toUpperCase(),risk_score:Number(raw.risk_score??raw.score??0),
+ anomaly_score:Number(raw.anomaly_score??raw.anomaly??0),activity:Number(raw.activity??((Number(raw.tilt)||0)+(Number(raw.vibration)||0))),
+ activity_5:Number(raw.activity_5??0),tilt_5:Number(raw.tilt_5??0),vibration_5:Number(raw.vibration_5??0),timestamp:raw.timestamp??raw.last_seen??raw.lastSeen??null};
+}
+async function loadFast(){
+ if(busyFast)return;busyFast=true;
+ try{
+   const d=await getJSON("/status");
+   const apiState=document.getElementById("apiState");if(apiState)apiState.innerHTML='<span class="dot"></span>ONLINE';
+   if(d){
+     const raw=d.node||d.current_node||d.data||d;
+     if(raw && (raw.node_id||raw.nodeID||raw.tilt!==undefined)){
+       const id=canonical(raw.node_id||raw.nodeID||selectedNode);nodes[id]=normalize(raw,id);
+       if(id===selectedNode)renderSelected();
+     }
+     if(d.ai||d.risk_level){applyAI(d.ai||d)}
+   }
+ }catch(e){const apiState=document.getElementById("apiState");if(apiState)apiState.textContent="OFFLINE"}finally{busyFast=false}
+}
+async function loadNodes(){
+ if(busySlow)return;busySlow=true;
+ try{
+   const d=await getJSON("/nodes");let arr=Array.isArray(d)?d:(d?.nodes||[]);
+   const next={};
+   NODE_IDS.forEach(id=>{let raw=arr.find(x=>canonical(x.node_id||x.nodeID||x.id)===id);next[id]=normalize(raw,id)});
+   Object.assign(nodes,next);renderSelector();renderSelected();renderNetwork();renderMap();
+ }catch(e){console.error(e)}finally{busySlow=false}
+}
+async function loadEvents(){
+ try{const d=await getJSON("/events");events=Array.isArray(d)?d:(d?.events||[]);renderRecentEvents();renderAlerts();renderTimeline()}catch(e){console.error(e)}
+}
+async function loadAnalytics(){
+ if(busyAnalytics)return;busyAnalytics=true;
+ try{
+  const d=await getJSON("/analytics?range_hours="+rangeHours);
+  txt("histRecords",d?.total_records??d?.records??"—");txt("histTilt",d?.tilt_events??"—");txt("histVib",d?.vibration_events??"—");txt("histNodes",d?.total_nodes??Object.values(nodes).filter(x=>x.online).length);
+  const rows=Array.isArray(d?.data)?d.data:[];
+  drawChart("chartTilt",rows,"tilt");drawChart("chartVib",rows,"vibration");
+ }catch(e){console.error(e)}finally{busyAnalytics=false}
+}
+function applyAI(ai){
+ if(!ai)return;
+ const n=nodes[selectedNode]||{};
+ const risk=String(ai.risk_level??ai.risk??n.risk_level??"LOW").toUpperCase();
+ n.risk_level=risk;n.risk_score=Number(ai.risk_score??ai.score??n.risk_score??0);n.anomaly_score=Number(ai.anomaly_score??ai.anomaly??n.anomaly_score??0);
+ n.activity=Number(ai.activity??n.activity??0);n.activity_5=Number(ai.activity_5??ai.recent_activity??n.activity_5??0);
+ nodes[selectedNode]=n;renderSelected();renderAI();
+}
+function renderSelector(){
+ const c=document.getElementById("nodeStrip");c.innerHTML="";
+ NODE_IDS.forEach(id=>{let n=nodes[id]||{online:false};let b=document.createElement("button");b.className="node-btn "+(id===selectedNode?"selected ":"")+(n.online?"":"unavailable");b.onclick=()=>selectNode(id);b.innerHTML=`<strong>${id}</strong><small>${n.online?"● CONNECTED":"○ UNAVAILABLE"}</small>`;c.appendChild(b)})
+}
+function selectNode(id){selectedNode=id;renderSelector();renderSelected();renderMap()}
+function renderSelected(){
+ const n=nodes[selectedNode]||{online:false};txt("tNode",selectedNode);txt("aiNode",selectedNode);
+ if(!n.online){
+   ["tilt","vibration","temperature","humidity","activity5","anomaly","riskScore","riskLevel","tTilt","tVib","tTemp","tHum","tRisk","tAge"].forEach(id=>txt(id,"—"));
+   txt("brief","No live telemetry has been received from "+selectedNode+".");return;
+ }
+ txt("tilt",n.tilt);txt("vibration",n.vibration);txt("temperature",number(n.temperature)+" °C");txt("humidity",number(n.humidity)+" %");
+ txt("activity5",number(n.activity_5,0));txt("anomaly",n.anomaly_score===1?"ANOMALY":"NORMAL");
+ txt("riskLevel",n.risk_level);txt("riskScore",number(n.risk_score,0));txt("riskMessage",riskDescription(n.risk_level));
+ txt("tTilt",n.tilt);txt("tVib",n.vibration);txt("tTemp",number(n.temperature)+"°C");txt("tHum",number(n.humidity)+"%");txt("tRisk",n.risk_level);
+ let age=n.timestamp?Math.max(0,Date.now()-new Date(String(n.timestamp).replace(" ","T")).getTime()):NaN;txt("tAge",Number.isFinite(age)?(age<1000?age+"ms":Math.round(age/1000)+"s"):"—");
+ document.getElementById("riskRing").className="risk-ring risk-"+riskClass(n.risk_level);
+ document.getElementById("tiltState").className="state "+(Number(n.tilt)?"alert":"normal");txt("tiltState",Number(n.tilt)?"● EVENT":"● NORMAL");
+ document.getElementById("vibState").className="state "+(Number(n.vibration)?"alert":"normal");txt("vibState",Number(n.vibration)?"● EVENT":"● NORMAL");
+ txt("anomalyText","ANOMALY: "+(n.anomaly_score===1?"DETECTED":"NORMAL"));txt("brief",riskDescription(n.risk_level)+" Current activity: "+number(n.activity,0)+". Rolling 5-sample activity: "+number(n.activity_5,0)+".");
+ renderAI();renderMap()
+}
+function renderAI(){
+ const n=nodes[selectedNode]||{};txt("aiRisk",n.risk_level||"—");txt("aiScore",n.risk_score??"—");txt("aiAnomaly",n.anomaly_score===1?"ANOMALY":"NORMAL");txt("aiActivity",n.activity_5??"—");
+ txt("factorTilt",n.tilt_5??n.tilt??0);txt("factorVib",n.vibration_5??n.vibration??0);txt("factorActivity",n.activity_5??n.activity??0);txt("factorAnomaly",n.anomaly_score===1?"ANOMALY":"NORMAL");
+ let a=Math.min(100,Number(n.tilt_5??n.tilt??0)*20),b=Math.min(100,Number(n.vibration_5??n.vibration??0)*20),c=Math.min(100,Number(n.activity_5??n.activity??0)*10),x=n.anomaly_score===1?100:0;
+ ["barTilt","barVib","barActivity","barAnomaly"].forEach((id,i)=>document.getElementById(id).style.width=[a,b,c,x][i]+"%");
+ txt("aiAssessment",riskDescription(n.risk_level)+" The displayed assessment is generated from the prototype's current rule-based/Isolation Forest pipeline and should not be treated as a certified mine-safety prediction.")
+}
+function renderNetwork(){
+ const c=document.getElementById("networkGrid");c.innerHTML="";
+ NODE_IDS.forEach(id=>{let n=nodes[id]||{online:false};let card=document.createElement("div");card.className="card node-panel "+(n.online?"":"offline");
+ card.innerHTML=n.online?`<div class="card-label">SENSOR NODE</div><h4>${id}</h4><div class="node-live">● CONNECTED</div><div class="node-metrics"><div><span>TEMP</span><b>${number(n.temperature)}°</b></div><div><span>HUMIDITY</span><b>${number(n.humidity)}%</b></div><div><span>TILT</span><b>${n.tilt}</b></div><div><span>VIBRATION</span><b>${n.vibration}</b></div></div><div style="margin-top:14px"><span class="pill ${riskClass(n.risk_level)}">${n.risk_level}</span></div>`:
+ `<div class="card-label">SENSOR NODE</div><h4>${id}</h4><div class="node-off">○ UNAVAILABLE</div><div class="sub" style="margin-top:25px">No sensor telemetry received.</div>`;
+ c.appendChild(card)})
+}
+function eventNorm(e,i){let node=canonical(e.node_id||e.nodeID||e.node||"UNKNOWN"),risk=String(e.risk_level||e.risk||"LOW").toUpperCase(),id=String(e.id??e.event_id??node+"_"+(e.timestamp||i));let type=Number(e.tilt)&&Number(e.vibration)?"TILT + VIBRATION":Number(e.tilt)?"TILT":Number(e.vibration)?"VIBRATION":"ACTIVITY";return{id,node,risk,time:e.timestamp||e.time,type,tilt:Number(e.tilt||0),vib:Number(e.vibration||0),resolved:resolved.includes(id)}}
+function renderRecentEvents(){let t=document.getElementById("recentEvents");t.innerHTML="";let a=events.map(eventNorm).filter(e=>e.node===selectedNode).slice(0,8);if(!a.length){t.innerHTML='<tr><td colspan="6" style="text-align:center;color:#40525b">No events for '+selectedNode+"</td></tr>";return}a.forEach(e=>{let r=document.createElement("tr");r.innerHTML=`<td>${time(e.time)}</td><td>${e.node}</td><td>${e.type}</td><td>${e.tilt}</td><td>${e.vib}</td><td><span class="pill ${riskClass(e.risk)}">${e.risk}</span></td>`;t.appendChild(r)})}
+function renderTimeline(){let c=document.getElementById("aiTimeline");if(!c)return;c.innerHTML="";let a=events.map(eventNorm).filter(e=>e.node===selectedNode).slice(0,10).reverse();if(!a.length){c.innerHTML='<div style="color:#40525b;font-size:8px">No recent events</div>';return}a.forEach(e=>{let b=document.createElement("div");let h=Math.max(8,Math.min(80,(e.tilt+e.vib)*30));b.className="timebar";b.style.height=h+"px";b.style.borderTopColor=e.risk==="CRITICAL"?"var(--red)":e.risk==="HIGH"?"var(--orange)":e.risk==="WARNING"?"var(--amber)":"var(--cyan)";b.innerHTML=`<span>${time(e.time)}</span>`;c.appendChild(b)})}
+function setAlertFilter(f,b){alertFilter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderAlerts()}
+function renderAlerts(){let a=events.map(eventNorm),active=a.filter(x=>!x.resolved),crit=active.filter(x=>x.risk==="CRITICAL"),warn=active.filter(x=>x.risk==="WARNING"||x.risk==="HIGH"),res=a.filter(x=>x.resolved);txt("activeCount",active.length);txt("criticalCount",crit.length);txt("warningCount",warn.length);txt("resolvedCount",res.length);let list=alertFilter==="ACTIVE"?active:alertFilter==="CRITICAL"?crit:alertFilter==="WARNING"?warn:res,t=document.getElementById("alertTable");t.innerHTML="";if(!list.length){t.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#40525b">No '+alertFilter.toLowerCase()+" alerts</td></tr>";return}list.forEach(e=>{let r=document.createElement("tr");r.innerHTML=`<td>${time(e.time)}</td><td>${e.node}</td><td>${e.type}</td><td><span class="pill ${riskClass(e.risk)}">${e.risk}</span></td><td><span class="pill ${e.resolved?"resolved":riskClass(e.risk)}">${e.resolved?"RESOLVED":"ACTIVE"}</span></td><td>${e.resolved?"✓":`<button class="resolve" onclick="resolveAlert('${e.id.replace(/'/g,"")}')">RESOLVE</button>`}</td>`;t.appendChild(r)})}
+function resolveAlert(id){if(!resolved.includes(id))resolved.push(id);localStorage.setItem("subsentinel_resolved_v2",JSON.stringify(resolved));renderAlerts()}
+function renderMap(){
+ const n=nodes[selectedNode]||{};
+ txt("mapNode",selectedNode);
+ txt("mapSelected",selectedNode);
+ txt("mapDescription",n.online?"Live telemetry available from this node.":"This node is currently unavailable.");
+ txt("mapTilt",n.tilt??"—");txt("mapVib",n.vibration??"—");txt("mapRisk",n.risk_level??"—");txt("mapScore",n.risk_score??"—");
+ const locations={
+   NODE_01:["ENTRY CROSSCUT","110, 430"],
+   NODE_02:["SHAFT INTERFACE","430, 210"],
+   NODE_03:["EAST PANEL","820, 430"],
+   NODE_04:["RETURN AIRWAY","430, 720"],
+   NODE_05:["PANEL B","700, 670"]
+ };
+ const loc=locations[selectedNode]||["UNKNOWN","—"];
+ txt("mapLocation",loc[0]);txt("mapCoords",loc[1]);
+ NODE_IDS.forEach((id,i)=>{
+   const el=document.getElementById("mapN"+(i+1)); if(!el)return;
+   const x=nodes[id]||{online:false};
+   el.className="top-node "+(id===selectedNode?"selected ":"")+
+     (x.risk_level==="CRITICAL"?"crit":(x.risk_level==="WARNING"||x.risk_level==="HIGH"?"warn":""))+
+     (!x.online?" offline":"");
+ });
+ txt("mapActiveNodes",Object.values(nodes).filter(x=>x.online).length);
+ txt("exportCount",events.length);txt("exportNode",selectedNode);
+ txt("settingsResolved",resolved.length);
+}
+function mapZoom(f){
+ mapScale=Math.max(.75,Math.min(1.55,mapScale*f));
+ const m=document.getElementById("topViewMap");
+ if(m)m.style.setProperty("--map-scale",mapScale);
+ document.querySelectorAll("#topViewMap > *:not(.map-toolbar):not(.mine-legend):not(.map-scale)").forEach(el=>{
+   if(!el.classList.contains("map-label"))el.style.transform=(el.classList.contains("top-node")?"":"")+
+      "scale("+mapScale+")";
+ });
+}
+function mapReset(){
+ mapScale=1;
+ const m=document.getElementById("topViewMap");if(m)m.style.setProperty("--map-scale",1);
+ document.querySelectorAll("#topViewMap > *").forEach(el=>el.style.transform="");
+}
+function toggleLayer(id,b){
+ const e=document.getElementById(id);if(!e)return;
+ e.style.display=e.style.display==="none"?"block":"none";b.classList.toggle("active");
+ updateLayerState();
+}
+function toggleLayerClass(cls,b){
+ const hidden=document.querySelector(".topview-map ."+cls)?.style.display==="none";
+ document.querySelectorAll(".topview-map ."+cls).forEach(e=>e.style.display=hidden?"":"none");
+ b.classList.toggle("active",!hidden);updateLayerState();
+}
+function setLayer(id,on){const e=document.getElementById(id);if(e)e.style.display=on?"block":"none";updateLayerState()}
+function setLayerClass(cls,on){document.querySelectorAll(".topview-map ."+cls).forEach(e=>e.style.display=on?"":"none");updateLayerState()}
+function setNodeLabels(on){document.querySelectorAll(".node-tag,.coord-tag").forEach(e=>e.style.display=on?"":"none");updateLayerState()}
+function updateLayerState(){
+ const grid=document.getElementById("mapGrid")?.style.display!=="none";
+ const seam=document.querySelector(".topview-map .seam-fill")?.style.display!=="none";
+ const cross=document.querySelector(".topview-map .crosscut")?.style.display!=="none";
+ const zone=document.querySelector(".topview-map .zone")?.style.display!=="none";
+ txt("mapLayerState",[grid,seam,cross,zone].filter(Boolean).length===4?"ALL ON":"CUSTOM");
+}
+function drawChart(id,rows,field){
+ const c=document.getElementById(id);if(!c)return;c.innerHTML="";rows=Array.isArray(rows)?rows:[];
+ if(!rows||!rows.length){c.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#40525b;font-size:8px">NO DATA</div>';return}
+ const vals=rows.map(x=>Number(x[field]||0)),max=Math.max(...vals,1),w=600,h=160,p=8;
+ let pts=vals.map((v,i)=>`${p+(i/(Math.max(1,vals.length-1)))*(w-p*2)},${h-p-(v/max)*(h-p*2)}`).join(" ");
+ c.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#20d7e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${vals.map((v,i)=>`<circle cx="${p+(i/(Math.max(1,vals.length-1)))*(w-p*2)}" cy="${h-p-(v/max)*(h-p*2)}" r="3" fill="#20d7e8"/>`).join("")}</svg>`
+}
+
+function setRefresh(ms,b){
+ fastRefreshMs=ms;
+ document.querySelectorAll(".option-btn").forEach(x=>{if(x.textContent.includes("MS")||x.textContent.includes("1.2S"))x.classList.remove("active")});
+ b?.classList.add("active");
+ txt("refreshText","Current: "+(ms>=1000?(ms/1000)+" s":ms+" ms"));
+}
+function csvEscape(v){return '"'+String(v??"").replace(/"/g,'""')+'"'}
+function exportCSV(mode){
+ let rows=events.map(eventNorm);
+ if(mode==="SELECTED")rows=rows.filter(x=>x.node===selectedNode);
+ if(mode==="ACTIVE")rows=rows.filter(x=>!x.resolved);
+ const header=["id","timestamp","node_id","event","tilt","vibration","risk_level","status"];
+ const lines=[header.join(",")].concat(rows.map(x=>[
+   csvEscape(x.id),csvEscape(x.time),csvEscape(x.node),csvEscape(x.type),x.tilt,x.vib,csvEscape(x.risk),csvEscape(x.resolved?"RESOLVED":"ACTIVE")
+ ].join(",")));
+ const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement("a");const url=URL.createObjectURL(blob);a.href=url;
+ a.download="subsentinel_"+mode.toLowerCase()+"_events.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function clearResolved(){
+ resolved=[];localStorage.setItem("subsentinel_resolved_v2","[]");renderAlerts();renderMap();
+}
+function setRange(h,b){rangeHours=h;document.querySelectorAll(".range").forEach(x=>x.classList.remove("active"));if(b)b.classList.add("active");loadAnalytics()}
+function showPage(id,el){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id)?.classList.add("active");
+ document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+ el?.classList.add("active");
+ if(id==="history")loadAnalytics();
+ if(id==="map")renderMap();
+ if(id==="gateway")txt("gwNodes",Object.values(nodes).filter(x=>x.online).length);
+ if(id==="export"){txt("exportCount",events.length);txt("exportNode",selectedNode)}
+ if(id==="settings")txt("settingsResolved",resolved.length);
+}
+function tick(){txt("clock",new Date().toLocaleTimeString())}
+async function fastLoop(){try{await loadFast()}catch(e){console.error(e)}finally{setTimeout(fastLoop,fastRefreshMs)}}
+async function slowLoop(){try{await loadNodes();await loadEvents()}catch(e){console.error(e)}finally{setTimeout(slowLoop,1000)}}
+setInterval(tick,1000);tick();loadNodes();loadEvents();loadAnalytics();fastLoop();slowLoop();
+</script>
+</body>
+</html>
