@@ -526,6 +526,6 @@ This project is developed as a prototype for educational, research, and demonstr
 
 # Author
 
-**Anees Ahmed A and Vignesh R**
+**Anees Ahmed A,Vignesh R, Sivagnanasubramaniyam, Harini Elangovan, Shanmathi A, Vishwa K**
 
 SUBSENTINEL AI — AI-Enabled Mine Intelligence and Subsidence Monitoring System
